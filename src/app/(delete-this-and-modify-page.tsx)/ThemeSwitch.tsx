@@ -41,7 +41,7 @@ const ThemeSwitch: React.FC = () => {
 
     return (
         <div className='w-fit'>
-            <div className='flex w-auto flex-row justify-center overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-700 sm:flex-row'>
+            <div className='flex w-auto flex-row justify-center overflow-hidden rounded-3xl border border-neutral-200 sm:flex-row dark:border-neutral-700'>
                 {SWITCH_DATA.map((data) => (
                     <button
                         key={data.value}
