@@ -45,46 +45,51 @@ interface ExtensionDetails {
 }
 
 // Fetch extension details function with types
-const fetchExtensionDetails = async (extension: string): Promise<ExtensionDetails> => {
-    const response = await fetch('https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json;api-version=3.0-preview.1'
-        },
-        body: JSON.stringify({
-            filters: [
-                {
-                    criteria: [{ filterType: 7, value: extension }]
-                }
-            ],
-            flags: 914
-        })
-    });
+const fetchExtensionDetails = async (extension: string): Promise<ExtensionDetails | null> => {
+    try {
+        const response = await fetch('https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json;api-version=3.0-preview.1'
+            },
+            body: JSON.stringify({
+                filters: [
+                    {
+                        criteria: [{ filterType: 7, value: extension }]
+                    }
+                ],
+                flags: 914
+            })
+        });
 
-    const data = await response.json();
-    const extensionData: ExtensionData = data.results[0].extensions[0];
+        const data = await response.json();
+        const extensionData: ExtensionData = data.results[0].extensions[0];
 
-    // Extract relevant details
-    const downloadCount = extensionData.statistics.find((stat) => stat.statisticName === 'install')?.value ?? 0;
-    const iconUri =
-        extensionData.versions[0].files.find(
-            (file) => file.assetType === 'Microsoft.VisualStudio.Services.Icons.Default'
-        )?.source || '';
+        const downloadCount = extensionData.statistics.find((stat) => stat.statisticName === 'install')?.value ?? 0;
+        const iconUri =
+            extensionData.versions[0].files.find(
+                (file) => file.assetType === 'Microsoft.VisualStudio.Services.Icons.Default'
+            )?.source || '';
 
-    return { name: extension, displayName: extensionData.displayName, downloadCount, iconUri };
+        return { name: extension, displayName: extensionData.displayName, downloadCount, iconUri };
+    } catch {
+        return null;
+    }
 };
 
 // ExtensionDetails component with types
 const ExtensionDetails: React.FC = async () => {
-    const extensionDetails = await Promise.all(RECOMMENDED_EXTENSIONS.map(fetchExtensionDetails));
+    const results = await Promise.all(RECOMMENDED_EXTENSIONS.map(fetchExtensionDetails));
+    const extensionDetails = results.filter((ext): ext is ExtensionDetails => ext !== null);
 
     return (
         <div className='mx-auto grid max-w-2xl grid-cols-6 gap-y-3 sm:grid-cols-9 sm:gap-y-6'>
             {extensionDetails.map((extension) => {
+                const marketplaceUrl = `https://marketplace.visualstudio.com/items?itemName=${extension.name}`;
                 return (
                     <div key={extension.name} className='group relative inline-flex justify-center'>
-                        <Link href={``} target='_blank'>
+                        <Link href={marketplaceUrl} target='_blank'>
                             <img className='size-9 hover:cursor-pointer' src={extension.iconUri} alt={extension.name} />
                         </Link>
                         <div className='absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 transform space-y-1.5 rounded-sm bg-neutral-200 p-3 text-sm whitespace-nowrap text-black group-hover:block'>

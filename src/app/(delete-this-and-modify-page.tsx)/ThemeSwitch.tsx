@@ -48,10 +48,7 @@ const ThemeSwitch: React.FC = () => {
                         className={`flex items-center gap-2 px-4 py-2 text-black dark:text-white ${
                             theme === data.value && mounted ? 'bg-neutral-200 dark:bg-neutral-700' : 'bg-transparent'
                         } dark:hover:bg-neutral-800`}
-                        onClick={() => {
-                            console.log('Theme:', data.value);
-                            setTheme(data.value);
-                        }}>
+                        onClick={() => setTheme(data.value)}>
                         {data.iconSvg}
                         <h3 className='hidden sm:block'>{data.name}</h3>
                     </button>
